@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem Analysis Framework</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #d2f0f0; /* Updated background color */
+        }
+        .grid-header {
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        .grid-cell {
+            background-color: white;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            font-size: 0.9rem;
+            color: #374151;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 80px;
+        }
+        .grid-cell:hover {
+            background-color: #f9fafb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .grid-cell.answered {
+            background-color: #fce7f3; /* Light pink for answered questions */
+            border-left: 4px solid #e72582; /* Pink accent border */
+            font-weight: 500;
+        }
+        .label-cell {
+            background-color: #1f2a52; /* Dark Blue from palette */
+            color: white;
+            font-weight: 600;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid #374151;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            transform: scale(0.95);
+            transition: transform 0.3s ease-in-out;
+        }
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+    <div class="container mx-auto max-w-7xl bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Problem Analysis Framework</h1>
+            <p class="text-gray-600 mt-2">A structured tool to guide your critical thinking and problem-solving process.</p>
+        </div>
+
+        <!-- Step 1: Define the Problem -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-700 border-b-2 border-gray-200 pb-2 mb-4">Step 1: Define Your Problem</h2>
+            <textarea id="problemStatement" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" rows="4" placeholder="Clearly describe the problem or situation you are analyzing here..."></textarea>
+        </div>
+
+        <!-- Step 2: Analysis Grid -->
+        <div class="mb-8 overflow-x-auto">
+            <h2 class="text-2xl font-bold text-gray-700 border-b-2 border-gray-200 pb-2 mb-4">Step 2: Ask the Right Questions</h2>
+            <div id="analysisGrid" class="grid" style="grid-template-columns: 100px repeat(4, 1fr);">
+                <!-- Headers -->
+                <div class="hidden md:block"></div> <!-- Empty corner cell -->
+                <div class="grid-header rounded-tl-lg" style="background-color: #1f2a52;">Fact Finding</div>
+                <div class="grid-header" style="background-color: #00bec7;">Deeper Inquiry</div>
+                <div class="grid-header" style="background-color: #e72582;">Exploring Alternatives</div>
+                <div class="grid-header rounded-tr-lg" style="background-color: #abb5bf;">Action Plan</div>
+
+                <!-- Row 1: WHAT -->
+                <div class="label-cell">WHAT</div>
+                <div class="grid-cell" data-id="what-current">What actions have been taken?</div>
+                <div class="grid-cell" data-id="what-questioning">What is the purpose of this?</div>
+                <div class="grid-cell" data-id="what-solution">What are the alternatives?</div>
+                <div class="grid-cell" data-id="what-remaining">What is the next step?</div>
+
+                <!-- Row 2: HOW -->
+                <div class="label-cell">HOW</div>
+                <div class="grid-cell" data-id="how-current">How is it currently performed?</div>
+                <div class="grid-cell" data-id="how-questioning">What is the reason for this method?</div>
+                <div class="grid-cell" data-id="how-solution">How could this be done better?</div>
+                <div class="grid-cell" data-id="how-remaining">How will it be performed in the future?</div>
+
+                <!-- Row 3: WHO -->
+                <div class="label-cell">WHO</div>
+                <div class="grid-cell" data-id="who-current">Who was involved?</div>
+                <div class="grid-cell" data-id="who-questioning">Why were they chosen?</div>
+                <div class="grid-cell" data-id="who-solution">Who else could be involved?</div>
+                <div class="grid-cell" data-id="who-remaining">Who will be responsible?</div>
+
+                <!-- Row 4: WHERE -->
+                <div class="label-cell">WHERE</div>
+                <div class="grid-cell" data-id="where-current">Where does this take place?</div>
+                <div class="grid-cell" data-id="where-questioning">Why was this location selected?</div>
+                <div class="grid-cell" data-id="where-solution">Where else could this happen?</div>
+                <div class="grid-cell" data-id="where-remaining">Where will this take place next?</div>
+
+                <!-- Row 5: WHEN -->
+                <div class="label-cell rounded-bl-lg">WHEN</div>
+                <div class="grid-cell" data-id="when-current">When does this occur?</div>
+                <div class="grid-cell" data-id="when-questioning">What is the reason for this timing?</div>
+                <div class="grid-cell" data-id="when-solution">Could the timing be changed?</div>
+                <div class="grid-cell rounded-br-lg" data-id="when-remaining">When is the deadline?</div>
+            </div>
+        </div>
+
+         <!-- Step 3: Export -->
+         <div>
+            <h2 class="text-2xl font-bold text-gray-700 border-b-2 border-gray-200 pb-2 mb-4">Step 3: Export Your Analysis</h2>
+            <button id="exportButton" class="w-full sm:w-auto text-white font-bold py-3 px-6 rounded-lg transition shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500" style="background-color: #e72582;" onmouseover="this.style.backgroundColor='#c01f6c'" onmouseout="this.style.backgroundColor='#e72582'">
+                Generate Printable Summary
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modalQuestion" class="text-2xl font-bold text-gray-800 mb-4"></h3>
+            <textarea id="modalAnswer" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition duration-200" rows="8" placeholder="Your notes and answers here..."></textarea>
+            <div class="mt-6 flex justify-end space-x-4">
+                <button id="closeModalButton" class="px-5 py-2 rounded-lg transition" style="background-color: #abb5bf; color: #1f2a52;" onmouseover="this.style.backgroundColor='#929ca6'" onmouseout="this.style.backgroundColor='#abb5bf'">Cancel</button>
+                <button id="saveAnswerButton" class="px-5 py-2 text-white font-bold rounded-lg transition" style="background-color: #e72582;" onmouseover="this.style.backgroundColor='#c01f6c'" onmouseout="this.style.backgroundColor='#e72582'">Save Answer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const analysisGrid = document.getElementById('analysisGrid');
+            const modal = document.getElementById('modal');
+            const modalQuestion = document.getElementById('modalQuestion');
+            const modalAnswer = document.getElementById('modalAnswer');
+            const closeModalButton = document.getElementById('closeModalButton');
+            const saveAnswerButton = document.getElementById('saveAnswerButton');
+            const exportButton = document.getElementById('exportButton');
+            const problemStatementTextarea = document.getElementById('problemStatement');
+
+            let currentQuestionId = null;
+
+            // --- New: Placeholder prompts for each question ---
+            const placeholderPrompts = {
+                "what-current": "Detail the specific actions that have already been taken so far...",
+                "what-questioning": "Think about the main objective. Why is this action important for the overall goal?",
+                "what-solution": "List other possible actions or strategies that could achieve a similar outcome.",
+                "what-remaining": "Clearly define the immediate action or task that needs to be completed.",
+                "how-current": "Map out the existing workflow. What tools or techniques are being used?",
+                "how-questioning": "Evaluate the current method's effectiveness. Is there a better way? Why was this method originally chosen?",
+                "how-solution": "Consider process improvements, new tools, or different approaches. How could it be made more efficient or effective?",
+                "how-remaining": "Describe the new procedure that will be followed going forward.",
+                "who-current": "Name the people, teams, or groups who participated in this.",
+                "who-questioning": "Explain their qualifications or role that made them suitable for this task. Was it their decision?",
+                "who-solution": "Brainstorm other individuals or teams who could contribute. Is there an opportunity to delegate?",
+                "who-remaining": "Who will take ownership of the next steps? Define their role clearly.",
+                "where-current": "Specify the exact location, platform, or environment for this task.",
+                "where-questioning": "Analyze the pros and cons of the current location. Is it the best possible place?",
+                "where-solution": "Think about other potential locations or environments. What are the benefits of moving it?",
+                "where-remaining": "Define where the next phase of this work will happen.",
+                "when-current": "State the timing or frequency of this event. When does it happen?",
+                "when-questioning": "Evaluate the importance of the timing. What factors dictated this schedule?",
+                "when-solution": "Consider alternative timelines. What would be the impact of changing the schedule?",
+                "when-remaining": "What is the specific due date or timeframe for the next action?"
+            };
+
+            // Data store for answers
+            const analysisData = {
+                problemStatement: "",
+                answers: {}
+            };
+
+            // Event listener for clicking on the grid
+            analysisGrid.addEventListener('click', (event) => {
+                const cell = event.target.closest('.grid-cell');
+                if (cell) {
+                    currentQuestionId = cell.dataset.id;
+                    openModal(cell);
+                }
+            });
+
+            function openModal(cell) {
+                modalQuestion.textContent = cell.textContent;
+                modalAnswer.value = analysisData.answers[currentQuestionId] || '';
+                // --- Updated: Set the placeholder text ---
+                modalAnswer.placeholder = placeholderPrompts[currentQuestionId] || "Your notes and answers here...";
+                modal.classList.add('visible');
+                modalAnswer.focus();
+            }
+
+            function closeModal() {
+                modal.classList.remove('visible');
+                currentQuestionId = null;
+            }
+
+            // Save answer
+            saveAnswerButton.addEventListener('click', () => {
+                if (currentQuestionId) {
+                    const answer = modalAnswer.value.trim();
+                    analysisData.answers[currentQuestionId] = answer;
+                    
+                    const cell = document.querySelector(`[data-id='${currentQuestionId}']`);
+                    if (cell) {
+                        if (answer) {
+                            cell.classList.add('answered');
+                        } else {
+                            // If answer is deleted, remove the highlight
+                            cell.classList.remove('answered');
+                        }
+                    }
+                }
+                closeModal();
+            });
+
+            // Close modal actions
+            closeModalButton.addEventListener('click', closeModal);
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+
+            // Allow closing modal with Escape key
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && modal.classList.contains('visible')) {
+                    closeModal();
+                }
+            });
+
+            // Export functionality
+            exportButton.addEventListener('click', () => {
+                analysisData.problemStatement = problemStatementTextarea.value.trim();
+
+                let summaryHtml = `
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Problem Analysis Summary</title>
+                        <style>
+                            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 40px auto; padding: 20px;}
+                            h1, h2, h3 { color: #111; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+                            h1 { font-size: 2.5em; }
+                            h2 { font-size: 2em; margin-top: 40px;}
+                            h3 { font-size: 1.4em; color: #4A5568; border-bottom: none; }
+                            .problem-statement { background-color: #f0f4f8; padding: 20px; border-left: 5px solid #4299e1; margin-bottom: 30px; white-space: pre-wrap; }
+                            .answer-block { margin-bottom: 25px; page-break-inside: avoid; }
+                            .answer-text { white-space: pre-wrap; background: #f9f9f9; padding: 15px; border-radius: 5px; border: 1px solid #eee; }
+                            @media print { body { margin: 20px; padding: 0;} .no-print { display: none; } }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>Problem Analysis Summary</h1>
+                        
+                        <div class="no-print" style="text-align:center; margin-bottom: 20px;">
+                            <button onclick="window.print()">Print this summary</button>
+                        </div>
+
+                        <h2>1. Problem Statement</h2>
+                        <div class="problem-statement">${analysisData.problemStatement ? analysisData.problemStatement.replace(/\n/g, '<br>') : '<em>No problem statement provided.</em>'}</div>
+                        
+                        <h2>2. Detailed Analysis</h2>
+                `;
+
+                const questions = document.querySelectorAll('.grid-cell');
+                let hasAnswers = false;
+                questions.forEach(q => {
+                    const id = q.dataset.id;
+                    const questionText = q.textContent;
+                    const answerText = analysisData.answers[id];
+                    
+                    if(answerText) {
+                        hasAnswers = true;
+                        summaryHtml += `
+                            <div class="answer-block">
+                                <h3>${questionText}</h3>
+                                <div class="answer-text">${answerText.replace(/\n/g, '<br>')}</div>
+                            </div>
+                        `;
+                    }
+                });
+
+                if (!hasAnswers) {
+                     summaryHtml += '<p><em>No answers were provided for the detailed analysis questions.</em></p>';
+                }
+
+
+                summaryHtml += '</body></html>';
+
+                const summaryWindow = window.open('', '_blank');
+                summaryWindow.document.write(summaryHtml);
+                summaryWindow.document.close();
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
